@@ -1,3 +1,4 @@
+install.packages("embed")
 library(tidyverse)
 library(tidymodels)
 library(embed)
@@ -7,13 +8,38 @@ library(glmnet)
 
 #Read Data
 
-setwd("~/Desktop/Fall 2024/Stat 348/GitHubRepos/amazon-employee-access-challenge/")
+#setwd("~/Desktop/Fall 2024/Stat 348/GitHubRepos/amazon-employee-access-challenge/")
+setwd("~/Kaggle/AmazonChallenge")
 
 train <- vroom("train.csv")
 test <- vroom("test.csv")
 
 train <- train %>% mutate(ACTION = as.factor(ACTION))
 
+my_recipe_log <- recipe(ACTION~., data = train) %>% 
+  step_mutate_at(all_numeric_predictors(), fn = factor) %>% 
+  step_other(all_nominal_predictors(), threshold = .001) %>% 
+  step_dummy(all_nominal_predictors())
+log_reg_model <- logistic_reg() %>% 
+  set_engine('glm')
+
+log_reg_workflow <- workflow() %>% 
+  add_model(log_reg_model) %>% 
+  add_recipe(my_recipe_log) %>% 
+  fit(data = train)
+
+log_reg_preds <- predict(log_reg_workflow, 
+                         new_data = test,
+                         type = 'prob')
+
+#Format for Submission
+
+log_reg_submission <- log_reg_preds %>% 
+  bind_cols(., test) %>% 
+  select(id, .pred_1) %>% 
+  rename(ACTION = .pred_1) 
+
+vroom_write(x=log_reg_submission, file="./LogRegPreds2.csv", delim=",")
 
 #Dummy Variable Encoding
 
@@ -58,4 +84,4 @@ plog_submission <- plog_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=plog_submission, file="./Submissions/PLogPreds1.csv", delim=",")
+vroom_write(x=plog_submission, file="./Submissions/PLogPreds2.csv", delim=",")
