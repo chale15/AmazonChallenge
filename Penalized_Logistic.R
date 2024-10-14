@@ -32,7 +32,7 @@ plog_workflow <- workflow() %>%
   add_model(plog_model) %>% 
   add_recipe(my_recipe)
 
-tuning_grid <- grid_regular(penalty(), mixture(), levels = 5)
+tuning_grid <- grid_regular(penalty(), mixture(), levels = 100)
 
 folds <- vfold_cv(train, v = 10, repeats=1)
 
