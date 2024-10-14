@@ -1,4 +1,3 @@
-install.packages("embed")
 library(tidyverse)
 library(tidymodels)
 library(embed)
@@ -20,6 +19,7 @@ my_recipe_log <- recipe(ACTION~., data = train) %>%
   step_mutate_at(all_numeric_predictors(), fn = factor) %>% 
   step_other(all_nominal_predictors(), threshold = .001) %>% 
   step_dummy(all_nominal_predictors())
+
 log_reg_model <- logistic_reg() %>% 
   set_engine('glm')
 
