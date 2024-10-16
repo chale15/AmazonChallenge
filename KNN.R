@@ -43,7 +43,7 @@ cv_results <- knn_workflow %>%
 
 best_tune <- cv_results %>% select_best(metric='roc_auc')
 
-final_workflow <- plog_workflow %>% 
+final_workflow <- knn_workflow %>% 
   finalize_workflow(best_tune) %>% 
   fit(data = train)
 
@@ -58,4 +58,4 @@ knn_submission <- knn_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=knn_submission, file="./Submissions/KNNPreds1.csv", delim=",")
+vroom_write(x=knn_submission, file="./Submissions/KNNPreds2.csv", delim=",")
