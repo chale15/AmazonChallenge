@@ -4,12 +4,12 @@ library(embed)
 library(vroom)
 library(workflows)
 library(glmnet)
-library(kknn)
+library(ranger)
 
 #Read Data
 
-setwd("~/Desktop/Fall 2024/Stat 348/GitHubRepos/amazon-employee-access-challenge/")
-#setwd("~/Kaggle/AmazonChallenge")
+#setwd("~/Desktop/Fall 2024/Stat 348/GitHubRepos/amazon-employee-access-challenge/")
+setwd("~/Kaggle/AmazonChallenge")
 
 train <- vroom("train.csv")
 test <- vroom("test.csv")
@@ -24,38 +24,40 @@ my_recipe <- recipe(ACTION~., data = train) %>%
 
 #Fit Model
 
-knn_model <- nearest_neighbor(neighbors=tune()) %>% 
+rf_model <- rand_forest(mtry=tune(),
+                        min_n=tune(),
+                        trees=1000) %>% 
   set_mode("classification") %>% 
-  set_engine("kknn")
+  set_engine("ranger")
 
-knn_workflow <- workflow() %>% 
-  add_model(knn_model) %>% 
+rf_workflow <- workflow() %>% 
+  add_model(rf_model) %>% 
   add_recipe(my_recipe)
 
-tuning_grid <- grid_regular(neighbors(), levels = 100)
+tuning_grid <- grid_regular(mtry(range=c(1, 9)), min_n(), levels = 20)
 
 folds <- vfold_cv(train, v = 10, repeats=1)
 
-cv_results <- knn_workflow %>% 
+cv_results <- rf_workflow %>% 
   tune_grid(resamples = folds,
             grid = tuning_grid, 
             metrics = metric_set(roc_auc))
 
 best_tune <- cv_results %>% select_best(metric='roc_auc')
 
-final_workflow <- knn_workflow %>% 
+final_workflow <- rf_workflow %>% 
   finalize_workflow(best_tune) %>% 
   fit(data = train)
 
-knn_preds <- predict(final_workflow, 
-                      new_data = test,
-                      type = 'prob')
+rf_preds <- predict(final_workflow, 
+                     new_data = test,
+                     type = 'pred')
 
 #Format for Submission
 
-knn_submission <- knn_preds %>% 
+rf_submission <- rf_preds %>% 
   bind_cols(., test) %>% 
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=knn_submission, file="./Submissions/KNNPreds2.csv", delim=",")
+vroom_write(x=rf_submission, file="./Submissions/RFPreds1.csv", delim=",")
