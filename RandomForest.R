@@ -26,7 +26,7 @@ my_recipe <- recipe(ACTION~., data = train) %>%
 
 rf_model <- rand_forest(mtry=tune(),
                         min_n=tune(),
-                        trees=1000) %>% 
+                        trees=500) %>% 
   set_mode("classification") %>% 
   set_engine("ranger")
 
@@ -34,7 +34,7 @@ rf_workflow <- workflow() %>%
   add_model(rf_model) %>% 
   add_recipe(my_recipe)
 
-tuning_grid <- grid_regular(mtry(range=c(1, 9)), min_n(), levels = 20)
+tuning_grid <- grid_regular(mtry(range=c(1, 9)), min_n(), levels = 10)
 
 folds <- vfold_cv(train, v = 10, repeats=1)
 
