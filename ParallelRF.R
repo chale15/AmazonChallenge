@@ -67,4 +67,4 @@ rf_submission <- rf_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=rf_submission, file="./Submissions/RFPreds1.csv", delim=",")
+vroom_write(x=rf_submission, file="./Submissions/ParallelRFPreds1.csv", delim=",")

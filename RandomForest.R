@@ -34,7 +34,7 @@ rf_workflow <- workflow() %>%
   add_model(rf_model) %>% 
   add_recipe(my_recipe)
 
-tuning_grid <- grid_regular(mtry(range=c(1, 9)), min_n(), levels = 10)
+tuning_grid <- grid_regular(mtry(range=c(1, 9)), min_n(), levels = 3)
 
 folds <- vfold_cv(train, v = 10, repeats=1)
 
@@ -61,4 +61,4 @@ rf_submission <- rf_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=rf_submission, file="./Submissions/RFPreds1.csv", delim=",")
+vroom_write(x=rf_submission, file="./Submissions/RFPreds2.csv", delim=",")
