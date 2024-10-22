@@ -5,6 +5,11 @@ library(vroom)
 library(workflows)
 library(glmnet)
 library(ranger)
+library(doParallel)
+
+parallel::detectCores()
+cl <- makePSOCKcluster(num_cores)
+registerDoParallel(cl)
 
 #Read Data
 
@@ -50,9 +55,10 @@ final_workflow <- rf_workflow %>%
   fit(data = train)
 
 rf_preds <- predict(final_workflow, 
-                     new_data = test,
-                     type = 'prob')
+                    new_data = test,
+                    type = 'prob')
 
+stopCluster(cl)
 
 #Format for Submission
 
