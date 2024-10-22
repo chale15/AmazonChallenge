@@ -51,7 +51,7 @@ final_workflow <- rf_workflow %>%
 
 rf_preds <- predict(final_workflow, 
                      new_data = test,
-                     type = 'pred')
+                     type = 'prob')
 
 #Format for Submission
 
