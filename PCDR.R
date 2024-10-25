@@ -7,6 +7,7 @@ library(glmnet)
 library(naivebayes)
 library(ranger)
 library(kknn)
+library(discrim)
 
 #Read Data
 
@@ -45,7 +46,7 @@ log_reg_submission <- log_reg_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=log_reg_submission, file="./LogRegPreds3.csv", delim=",")
+vroom_write(x=log_reg_submission, file="./LogRegPreds4.csv", delim=",")
 
 
 #Penalized Logistic Model
@@ -76,14 +77,12 @@ plog_preds <- predict(final_workflow,
                       new_data = test,
                       type = 'prob')
 
-#Format for Submission
-
 plog_submission <- plog_preds %>% 
   bind_cols(., test) %>% 
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=plog_submission, file="./Submissions/PLogPreds3.csv", delim=",")
+vroom_write(x=plog_submission, file="./Submissions/PLogPreds4.csv", delim=",")
 
 #KNN Model
 
@@ -119,7 +118,7 @@ knn_submission <- knn_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=knn_submission, file="./Submissions/KNNPreds3.csv", delim=",")
+vroom_write(x=knn_submission, file="./Submissions/KNNPreds4.csv", delim=",")
 
 
 #Random Forest Model
@@ -158,7 +157,7 @@ rf_submission <- rf_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=rf_submission, file="./Submissions/RFPreds3.csv", delim=",")
+vroom_write(x=rf_submission, file="./Submissions/RFPreds4.csv", delim=",")
 
 #Naive Bayes Model
 
@@ -195,4 +194,4 @@ nb_submission <- nb_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=nb_submission, file="./Submissions/NBPreds3.csv", delim=",")
+vroom_write(x=nb_submission, file="./Submissions/NBPreds4.csv", delim=",")
