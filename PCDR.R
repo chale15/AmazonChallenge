@@ -33,7 +33,7 @@ log_reg_model <- logistic_reg() %>%
 
 log_reg_workflow <- workflow() %>% 
   add_model(log_reg_model) %>% 
-  add_recipe(my_recipe_log) %>% 
+  add_recipe(my_recipe) %>% 
   fit(data = train)
 
 log_reg_preds <- predict(log_reg_workflow, 
