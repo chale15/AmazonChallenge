@@ -61,4 +61,4 @@ radial_svm_submission <- radial_svm_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=radial_svm_submission, file="./Submissions/RadialSVMpreds1.csv", delim=",")
+vroom_write(x=radial_svm_submission, file="./Submissions/RadialSVMpreds2.csv", delim=",")
