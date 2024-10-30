@@ -21,7 +21,7 @@ my_recipe <- recipe(ACTION~., data = train) %>%
   step_mutate_at(all_numeric_predictors(), fn = factor) %>% 
   step_lencode_mixed(all_nominal_predictors(), outcome = vars(ACTION)) %>% 
   step_normalize(all_numeric_predictors()) %>% 
-  step_pca(all_predictors(), threshold=1) %>% 
+  step_pca(all_predictors(), threshold=.9) %>% 
   step_smote(all_outcomes(), neighbors=3)
 
 

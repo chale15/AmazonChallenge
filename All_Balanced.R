@@ -8,6 +8,7 @@ library(naivebayes)
 library(ranger)
 library(kknn)
 library(discrim)
+library(themis)
 
 #Read Data
 
@@ -23,7 +24,7 @@ my_recipe <- recipe(ACTION~., data = train) %>%
   step_mutate_at(all_numeric_predictors(), fn = factor) %>% 
   step_lencode_mixed(all_nominal_predictors(), outcome = vars(ACTION)) %>% 
   step_normalize(all_numeric_predictors()) %>% 
-  step_pca(all_predictors(), threshold=1) %>% 
+  step_pca(all_predictors(), threshold=0.9) %>% 
   step_smote(all_outcomes(), neighbors=3)
 
 
@@ -47,7 +48,7 @@ log_reg_submission <- log_reg_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=log_reg_submission, file="./LogRegPreds4.csv", delim=",")
+vroom_write(x=log_reg_submission, file="./Submissions/LogRegPreds7.csv", delim=",")
 
 
 #Penalized Logistic Model
@@ -83,7 +84,7 @@ plog_submission <- plog_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=plog_submission, file="./Submissions/PLogPreds4.csv", delim=",")
+vroom_write(x=plog_submission, file="./Submissions/PLogPreds5.csv", delim=",")
 
 #KNN Model
 
@@ -119,46 +120,8 @@ knn_submission <- knn_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=knn_submission, file="./Submissions/KNNPreds4.csv", delim=",")
+vroom_write(x=knn_submission, file="./Submissions/KNNPreds5.csv", delim=",")
 
-
-#Random Forest Model
-
-rf_model <- rand_forest(mtry=tune(),
-                        min_n=tune(),
-                        trees=500) %>% 
-  set_mode("classification") %>% 
-  set_engine("ranger")
-
-rf_workflow <- workflow() %>% 
-  add_model(rf_model) %>% 
-  add_recipe(my_recipe)
-
-tuning_grid <- grid_regular(mtry(range=c(1, 9)), min_n(), levels = 3)
-
-folds <- vfold_cv(train, v = 10, repeats=1)
-
-cv_results <- rf_workflow %>% 
-  tune_grid(resamples = folds,
-            grid = tuning_grid, 
-            metrics = metric_set(roc_auc))
-
-best_tune <- cv_results %>% select_best(metric='roc_auc')
-
-final_workflow <- rf_workflow %>% 
-  finalize_workflow(best_tune) %>% 
-  fit(data = train)
-
-rf_preds <- predict(final_workflow, 
-                    new_data = test,
-                    type = 'prob')
-
-rf_submission <- rf_preds %>% 
-  bind_cols(., test) %>% 
-  select(id, .pred_1) %>% 
-  rename(ACTION = .pred_1) 
-
-vroom_write(x=rf_submission, file="./Submissions/RFPreds4.csv", delim=",")
 
 #Naive Bayes Model
 
@@ -195,4 +158,4 @@ nb_submission <- nb_preds %>%
   select(id, .pred_1) %>% 
   rename(ACTION = .pred_1) 
 
-vroom_write(x=nb_submission, file="./Submissions/NBPreds4.csv", delim=",")
+vroom_write(x=nb_submission, file="./Submissions/NBPreds5.csv", delim=",")
