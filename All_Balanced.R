@@ -49,6 +49,7 @@ log_reg_submission <- log_reg_preds %>%
   rename(ACTION = .pred_1) 
 
 vroom_write(x=log_reg_submission, file="./Submissions/LogRegPreds7.csv", delim=",")
+##.86111
 
 
 #Penalized Logistic Model
@@ -85,6 +86,7 @@ plog_submission <- plog_preds %>%
   rename(ACTION = .pred_1) 
 
 vroom_write(x=plog_submission, file="./Submissions/PLogPreds5.csv", delim=",")
+##.87023
 
 #KNN Model
 
@@ -121,7 +123,7 @@ knn_submission <- knn_preds %>%
   rename(ACTION = .pred_1) 
 
 vroom_write(x=knn_submission, file="./Submissions/KNNPreds5.csv", delim=",")
-
+##.74584
 
 #Naive Bayes Model
 
@@ -159,3 +161,44 @@ nb_submission <- nb_preds %>%
   rename(ACTION = .pred_1) 
 
 vroom_write(x=nb_submission, file="./Submissions/NBPreds5.csv", delim=",")
+# .85432
+
+#Fit RF Model
+
+balanced_rf <- rand_forest(mtry=tune(),
+                           min_n=tune(),
+                           trees=500) %>% 
+  set_mode("classification") %>% 
+  set_engine("ranger")
+
+balanced_workflow <- workflow() %>% 
+  add_model(balanced_rf) %>% 
+  add_recipe(my_recipe)
+
+tuning_grid <- grid_regular(mtry(range=c(1, 9)), min_n(), levels = 3)
+
+folds <- vfold_cv(train, v = 10, repeats=1)
+
+cv_results <- balanced_workflow %>% 
+  tune_grid(resamples = folds,
+            grid = tuning_grid, 
+            metrics = metric_set(roc_auc))
+
+best_tune <- cv_results %>% select_best(metric='roc_auc')
+
+final_workflow <- balanced_workflow %>% 
+  finalize_workflow(best_tune) %>% 
+  fit(data = train)
+
+balanced_preds <- predict(final_workflow, 
+                          new_data = test,
+                          type = 'prob')
+
+balanced_submission <- balanced_preds %>% 
+  bind_cols(., test) %>% 
+  select(id, .pred_1) %>% 
+  rename(ACTION = .pred_1) 
+
+vroom_write(x=balanced_submission, file="./Submissions/BalancedPredsRF1.csv", delim=",")
+## .85346
+
